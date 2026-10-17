@@ -407,7 +407,7 @@ test('走查 C：护送凡人（saved_mortals，time+180）→ 张铁存亡两�
 
 // ———— 佣斗 combat：胜/挫两分支 ————
 
-test('佣斗：高机缘保货得赏（胜，injury+5 灵石+6）；低机缘失货（挫，injury+30 无赏）', () => {
+test('佣斗：高机缘保货得赏（胜，injury+5 灵石+36=工钱三十加赏六）；低机缘失货（挫，injury+30 灵石+30 工钱照付）', () => {
   const s = freshState();
   ch1Zhen(s, ['访张铁（打酒，听杂役院的闲话）', '访张铁（打酒，听杂役院的闲话）', '偷偷修炼（柴房夜练，自担风险）'], ch1TailNight);
   ch2To(s, { tieVisits: 0, rescue: false });
@@ -424,9 +424,15 @@ test('佣斗：高机缘保货得赏（胜，injury+5 灵石+6）；低机缘失
   step(s, '死保财货，那是买命钱'); // luck 29 ≥ 12 → 胜
   assert.equal(s.nodeId, 'ch4_佣斗胜');
   step(s, '继续');
-  assert.equal(s.lingshi, ls0 + 6, '佣斗胜应得追加赏钱');
+  assert.equal(s.lingshi, ls0 + 36, '佣斗胜应得工钱三十加赏六');
   assert.equal(s.injury, Math.min(100, inj0 + 5));
   assert.equal(s.nodeId, 'ch4_流亡');
+  // 保货胜正文：护货措辞应在，工钱赏钱应入账
+  const sHold = FC.State.create('李恒');
+  sHold.flags.ch4_dou_hold = true;
+  const tHold = FC.CH4.graph['ch4_佣斗胜'].text(sHold);
+  assert.match(tHold, /护住了|完好无损/, '保货线结尾应保留护货措辞');
+  assert.match(tHold, /工钱三十/, '保货胜应入账工钱三十');
   // 再跑一趟，压低机缘 → 挫
   step(s, '佣斗护商（替行商押货，拿命换钱）');
   assert.equal(s.nodeId, 'ch4_佣斗');
@@ -436,7 +442,35 @@ test('佣斗：高机缘保货得赏（胜，injury+5 灵石+6）；低机缘失
   assert.equal(s.nodeId, 'ch4_佣斗挫');
   step(s, '继续');
   assert.equal(s.injury, Math.min(100, inj1 + 30), '佣斗挫应 injury+30');
-  assert.equal(s.lingshi, ls1, '佣斗挫不得有赏钱');
+  assert.equal(s.lingshi, ls1 + 30, '佣斗挫应得工钱三十（货钱按契扣，工钱照付）');
+  assert.equal(s.nodeId, 'ch4_流亡');
+});
+
+// —— 佣斗·弃货胜：舍货保人 + 高机缘（luck≥25）走共用结尾的弃货分支 ——
+
+test('佣斗·弃货胜：舍货保人+luck≥25 → pass 走弃货结尾（雇主感念救人、话带可惜），不得出现保货措辞，账面同得工钱三十加赏六', () => {
+  const s = freshState();
+  ch1Zhen(s, ['访张铁（打酒，听杂役院的闲话）', '访张铁（打酒，听杂役院的闲话）', '偷偷修炼（柴房夜练，自担风险）'], ch1TailNight);
+  ch2To(s, { tieVisits: 0, rescue: false });
+  enterCh3(s);
+  ch3Finish(s);
+  enterCh4(s);
+  step(s, '随溃流撤下山去（保命，与宗门库藏失散）'); step(s, '继续');
+  step(s, '继续'); step(s, '继续'); // → 流亡
+  assert.equal(s.nodeId, 'ch4_流亡');
+  s.luck = Math.max(s.luck, 30); // 弃货线 pass 需 luck≥25
+  step(s, '佣斗护商（替行商押货，拿命换钱）');
+  assert.equal(s.nodeId, 'ch4_佣斗');
+  const ls0 = s.lingshi;
+  step(s, '舍货保人，先散伙计');
+  assert.equal(s.nodeId, 'ch4_佣斗胜', 'luck≥25 舍货保人应 pass');
+  assert.equal(s.flags.ch4_dou_hold, false, '弃货线旗标应为 false');
+  const winText = FC.Engine.view(s, G()).text;
+  assert.match(winText, /把人看得比货重/, '弃货胜应有雇主感念救人的新结尾');
+  assert.match(winText, /工钱三十/, '弃货胜应入账工钱三十');
+  assert.doesNotMatch(winText, /护住了|完好无损/, '弃货胜不得出现保货线措辞（货已折在青竹坳）');
+  step(s, '继续');
+  assert.equal(s.lingshi, ls0 + 36, '弃货胜同账：工钱三十加赏六');
   assert.equal(s.nodeId, 'ch4_流亡');
 });
 
@@ -459,23 +493,28 @@ test('机缘门槛：洞府需 knows_truth 或 luck≥15；凝魂丹需灵石≥
   const v = FC.Engine.view(s, G());
   const iDong = pick(s, '访前辈洞府（残页同源的去处）');
   const iNing = pick(s, '购凝魂丹（坊市丹铺，灵石 -50）');
-  const iHuo = pick(s, '地火淬体（火山地脉，淬体必受创）');
+  const iHuo = pick(s, '地火淬体（火山地脉，引路钱十灵石，淬体必受创）');
   assert.equal(v.choices[iDong].enabled, false, '无 knows_truth 且 luck<15 洞府应禁用');
   assert.equal(v.choices[iNing].enabled, false, '灵石不足 50 凝魂丹应可见但禁用');
-  assert.equal(v.choices[iHuo].enabled, true, '地火淬体应常开');
+  assert.equal(v.choices[iHuo].enabled, true, '灵石足（≥10）地火应可用');
+  s.lingshi = 5;
+  assert.equal(FC.Engine.view(s, G()).choices[iHuo].enabled, false, '灵石不足 10 地火应禁用');
+  s.lingshi = 19;
   const r = FC.Engine.choose(s, G(), iDong);
   assert.deepEqual(r, { ok: false, reason: 'disabled' });
   assert.equal(s.nodeId, 'ch4_机缘');
   // knows_truth=1 → 洞府可用
   s.karma.knows_truth = 1;
   assert.equal(FC.Engine.view(s, G()).choices[iDong].enabled, true, 'knows_truth 应开启洞府');
-  // 地火淬体走查：injury+30 必经
+  // 地火淬体走查：引路钱 -10、injury+30 必经
   const inj0 = s.injury;
-  step(s, '地火淬体（火山地脉，淬体必受创）');
+  const lsHuo = s.lingshi;
+  step(s, '地火淬体（火山地脉，引路钱十灵石，淬体必受创）');
   assert.equal(s.nodeId, 'ch4_地火');
   step(s, '继续');
   assert.equal(s.inventory['地火髓'], 1, '地火淬体应得地火髓');
   assert.equal(s.injury, Math.min(100, inj0 + 30), '地火淬体应 injury+30 必经');
+  assert.equal(s.lingshi, lsHuo - 10, '地火引路钱应灵石 -10');
   assert.equal(s.flags.ch4_jiyuan_done, true);
   assert.equal(s.nodeId, 'ch4_流亡');
   // 洞府门槛对照：luck≥15 也可开启（裸态落点验证）
