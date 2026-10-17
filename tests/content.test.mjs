@@ -302,7 +302,10 @@ test('走查·签苦契路线：hub 三月入账正确 → 顶罪 → 执法堂�
   assert.ok(s.day <= 400, 'day 超界: ' + s.day);
   assert.ok(s.lifespanYears < 9, '寿元应随时间减少');
   assert.ok(FC.Save.load('auto'), '应有 auto 存档');
-  assert.equal(FC.Save.load('checkpoint'), null); // 引擎从不写检查点
+  // Task 9 检查点接线：新开局写章首检查点，进入章末节点（meta.checkpointNode）时更新为章末进度
+  const cp = FC.Save.load('checkpoint');
+  assert.ok(cp, '章末检查点应已自动落盘且可 load');
+  assert.deepEqual(cp, s, '检查点应为章末完整进度');
   assert.ok(s.karma.aff_zhang_tie >= 3, '顶罪+张铁好感应有累积');
   assert.ok(s.karma.aff_steward >= 1, '点卯前管事好感应有来源');
 });
@@ -394,6 +397,11 @@ test('走查·夜探强闯：无准备莽进 → 死亡（combat 四档结局文
   assert.equal(s.dead, 'combat', '无豁免应真死');
   assert.match(FC.UI.deathText(s), /伤重不治/);
   assert.ok(FC.Save.load('auto'), '死亡状态照常落 auto');
+  // 死亡不吞进度（Task 9 接线后）：检查点仍是新开局时的章首存活进度，未被死亡流程改写
+  const cp = FC.Save.load('checkpoint');
+  assert.ok(cp, '死亡前应有章首检查点');
+  assert.equal(cp.nodeId, 'start');
+  assert.equal(FC.State.isDead(cp), false, '检查点必须是存活进度');
   // 豁免开：改为重伤垂死，剧情继续走
   const s2 = freshState();
   s2.deathExempt = true;

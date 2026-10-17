@@ -8,7 +8,8 @@ var FC=(typeof window!=='undefined'?window:globalThis).FC=(typeof window!=='unde
 //   {type:'death', cause, text}                                                        —— 终局；进入即结算死亡（尊重豁免）；复活由 UI 从 'checkpoint' load
 // 执行序（choose）：当前节点 effects → 选中项 effects → goto 跳转 → 统一落盘 'auto'。
 // 门槛：show 为 false 的选项不出现；enabled 为 false 的选项可见但不可选（view 的 enabled 字段即来源于此）。
-// 死亡不吞进度：引擎只写 'auto' 槽，从不写 'checkpoint'；效果与时间不受任何快进模式影响（引擎无跳过路径）。
+// 死亡不吞进度：引擎只写 'auto' 槽与"章首/章末检查点"（后者仅在存活时、且绝不发生于死亡流程）；
+// 效果与时间不受任何快进模式影响（引擎无跳过路径）。
 FC.Engine={
   // 合法节点类型表（固定五种，未知类型抛错——剧情 typo 不静默）
   _types:{scene:1,choice:1,hub:1,combat:1,death:1},
@@ -45,15 +46,30 @@ FC.Engine={
     const r=FC.Save.save(state,'auto');
     if(!r||r.ok!==true)throw new Error('自动存档失败: '+(r?r.reason:'无返回'));
   },
-  // 进入节点：置 nodeId；hub 进入即自动存档；death 进入即结算死亡（复用效果系统，尊重豁免）；返回补充 log
+  // —— 检查点接线（Task 9）：章首（新开局）与章末节点（内容经 setCheckpointNode 注册）写 'checkpoint' ——
+  // 注册表：默认 null（不写章末检查点）；内容脚本注册 FC.Content.meta.checkpointNode 后生效
+  _checkpointNode:null,
+  setCheckpointNode(nodeId){
+    FC.Engine._checkpointNode=nodeId||null;
+  },
+  // 写检查点：死亡不吞进度——死亡状态下不存在任何写检查点的路径（防御性跳过；
+  // Save 层对死亡存 checkpoint 亦直接拒绝，双保险）；失败抛错（与自动存档同一严格度）
+  _checkpoint(state){
+    if(FC.State.isDead(state))return;
+    const r=FC.Save.save(state,'checkpoint');
+    if(!r||r.ok!==true)throw new Error('检查点保存失败: '+(r?r.reason:'无返回'));
+  },
+  // 进入节点：置 nodeId；hub 进入即自动存档；death 进入即结算死亡（复用效果系统，尊重豁免）；
+  // 进入内容注册的章末节点（存活时）写检查点；返回补充 log
   _enter(state,graph,id){
     const node=FC.Engine._check(graph,id);
     state.nodeId=id;
     if(node.type==='hub'){
       FC.Engine._autosave(state);
     }else if(node.type==='death'){
-      return FC.Effects.apply(state,[{type:'death',cause:node.cause}]).log;
+      return FC.Effects.apply(state,[{type:'death',cause:node.cause}]).log; // 提前返回：death 节点绝不写检查点
     }
+    if(id===FC.Engine._checkpointNode)FC.Engine._checkpoint(state);
     return [];
   },
   // 渲染视图：纯读取，不改 state。show 为 false 的项不出现，tag 缺省 ''；death 与终局场景（无 goto）无选项
@@ -102,10 +118,12 @@ FC.Engine={
     if(graph[state.nodeId].type!=='hub')FC.Engine._autosave(state);
     return {ok:true,log:log};
   },
-  // 新开局：初始化 state 并落到入口节点 'start'（入口为 hub 时自动存档）
+  // 新开局：初始化 state 并落到入口节点 'start'（入口为 hub 时自动存档）；
+  // 章首检查点：新开局必为存活状态，此处即"进入第一章"的检查点写入时机
   start(name,graph){
     const state=FC.State.create(name);
     FC.Engine._enter(state,graph,'start');
+    FC.Engine._checkpoint(state);
     return state;
   },
 };

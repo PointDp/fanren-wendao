@@ -343,6 +343,7 @@ test('死亡画面：无检查点时提示且停留；重新开始回到开局�
   cleanSave();
   const m = mounted({ graph: deathGraph() });
   btnByText(m.screen(), '新的开始')._fire('click');
+  cleanSave(); // Task 9 接线后新开局会写章首检查点；清空以模拟"存档被清/无检查点"场景
   choiceBtn(m.screen(), '继续')._fire('click');
   btnByText(m.screen(), '从检查点苏醒')._fire('click');
   assert.ok(m.screen().className.includes('screen-death'));

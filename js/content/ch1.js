@@ -456,3 +456,6 @@ FC.Content={
   graph:Object.assign({},FC.CH1),
   items:FC.ITEMS
 };
+// —— 检查点接线（Task 9）：把本章章末节点注册进引擎，进入时（存活）自动写 'checkpoint'；
+// 章首检查点由引擎 start() 在新开局时写入，死亡流程不写（死亡不吞进度）——
+FC.Engine.setCheckpointNode(FC.Content.meta.checkpointNode);

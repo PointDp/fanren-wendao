@@ -37,8 +37,8 @@ FC.UI={
     return '劫数难逃。你的道途到此为止，名字很快便无人记得。';
   },
   // —— 纯逻辑：存读档菜单的槽位计划（UI 只按此渲染行与按钮）——
-  // auto=引擎自动档、checkpoint=章末检查点：只读展示（信息显示 + 可读取），UI 永不写检查点；
-  // m1..m3=手动档：存活时可存可读。死亡状态下不提供任何存入路径（死亡不吞进度）。
+  // auto=引擎自动档、checkpoint=检查点（引擎在新开局与章末自动写入）：只读展示（信息显示 + 可读取），
+  // UI 永不写检查点；m1..m3=手动档：存活时可存可读。死亡状态下不提供任何存入路径（死亡不吞进度）。
   slotPlan(state){
     const alive=!!(state&&!FC.State.isDead(state));
     const labels={auto:'自动档',checkpoint:'检查点',m1:'手动档一',m2:'手动档二',m3:'手动档三'};
@@ -239,7 +239,7 @@ FC.UI={
       top.appendChild(btn('返回',function(){ menu=false; menuMsg=''; render(); }));
       s.appendChild(top);
       s.appendChild(el('h2','save-title','存档 / 读档'));
-      s.appendChild(el('p','save-hint','自动档随剧情推进自动保存，检查点在章末自动保存；手动档一至三可随时存入。'));
+      s.appendChild(el('p','save-hint','自动档随剧情推进自动保存；检查点在新开局与章末自动保存，死亡时不更新；手动档一至三可随时存入。'));
       FC.UI.slotPlan(state).forEach(function(p){
         const row=el('div','slot-row');
         row.appendChild(el('span','slot-label',p.label));

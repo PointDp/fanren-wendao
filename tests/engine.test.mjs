@@ -198,10 +198,11 @@ test('节点 effects 先于选项 effects 执行', () => {
 test('死亡后 choose 拒绝继续并返回 {dead:true}；引擎不改写检查点', () => {
   cleanSave();
   const g = mainGraph();
-  const checkpoint = FC.State.create('韩立');
-  checkpoint.day = 40;
-  assert.deepEqual(FC.Save.save(checkpoint, 'checkpoint'), { ok: true, storage: 'memory' });
   const s = FC.Engine.start('李恒', g);
+  // Task 9 接线：新开局即写章首检查点；自此刻起到死亡，引擎不得再改写它
+  const checkpoint = FC.Save.load('checkpoint');
+  assert.ok(checkpoint, '新开局应已写章首检查点');
+  assert.equal(checkpoint.nodeId, 'start');
   FC.Engine.choose(s, g, 0); // → 岔路
   FC.Engine.choose(s, g, 1); // 先立狂言 → 院子
   FC.Engine.choose(s, g, 2); // 下山历练 → 斗
