@@ -37,8 +37,38 @@ FC.UI={
   },
   deathText(state){
     const cause=state&&state.dead;
-    if(cause&&Object.prototype.hasOwnProperty.call(FC.UI._DEATH_TEXTS,cause))return FC.UI._DEATH_TEXTS[cause];
+    if(cause&&Object.prototype.hasOwnProperty.call(FC.UI._DEATH_TEXTS,cause)){
+      if(cause!=='lifespan')return FC.UI._DEATH_TEXTS[cause];
+      // 寿终档：基本档＋生平段（按存档里的因果与遗物逐句拼接，要素无则不出现；裸档=基本档原文）
+      return FC.UI._DEATH_TEXTS.lifespan+FC.UI._lifeStory(state);
+    }
     return '劫数难逃。你的道途到此为止，名字很快便无人记得。';
+  },
+  // —— 纯逻辑：寿终档生平段。每要素一句，无则不出现（顶罪者/被救者/张铁存亡两态/李师姐存亡两态/心魔）——
+  _lifeStory(state){
+    if(!state)return '';
+    let t='';
+    const inv=state.inventory||{},karma=state.karma||{},flags=state.flags||{};
+    if((inv['张铁的家书']||0)>0){
+      t+='贴身的行囊里，还收着张铁托人捎来的家书。纸角磨圆了，青牛镇的方向你到死没有再回去过——那半袋烟的交情，你记到了最后一页。';
+    }else if(flags.ch3_tie_merchant){
+      t+='张铁后来随商队走了西边，你们最后一面是在坊市的酒肆里。他敬你半碗浊酒，你回了他半碗——谁也没说保重，都知道路还长。';
+    }
+    if((inv['李师姐遗物']||0)>0){
+      t+='那只枣木戥子还留在袖中，李师姐的手艺陪你走完了全程：称药如称心，分毫未欺。';
+    }else if((inv['李师姐的锦囊']||0)>0){
+      t+='李师姐筑基赠别的那只青布锦囊，你贴身收了一辈子，针脚细密，始终没有拆开第二遍。';
+    }
+    if(karma.took_blame){
+      t+='当年档房一案，你替孙毅把罪名担了下来；他这一生逢人便说欠你一条命，替你把名字记在了许多人的账上。';
+    }
+    if(karma.saved_mortals){
+      t+='乱起那年你从渡口护下的一船人，后来在江南生了根——他们不知道恩人是谁，只把那日的风浪，讲给一代一代的孩子听。';
+    }
+    if(flags.inner_demon===true){
+      t+='只有你自己知道，识海深处那粒魔种从未死去——它只是随着寿元一道，安安静静地烧尽了。';
+    }
+    return t;
   },
   // —— 纯逻辑：存读档菜单的槽位计划（UI 只按此渲染行与按钮）——
   // auto=引擎自动档、checkpoint=检查点（引擎在新开局与章末自动写入）：只读展示（信息显示 + 可读取），
