@@ -455,6 +455,17 @@ test('开发者面板集成：~ 呼出，改灵石立即反映到状态栏', () 
   assert.ok(statusText(m.container).includes('灵石 66'));
 });
 
+test('主界面可回到标题界面：对局清空但存档保留（章末终局/中途歇手的出口）', () => {
+  cleanSave();
+  const m = mounted({ graph: mainGraph() });
+  btnByText(m.screen(), '新的开始')._fire('click');
+  choiceBtn(m.screen(), '继续')._fire('click'); // 进入 hub（已落 auto）
+  btnByText(m.screen(), '标题')._fire('click');
+  assert.ok(m.screen().className.includes('screen-start'));
+  assert.equal(m.handle.getState(), null);
+  assert.ok(FC.Save.load('auto'), '进度不被清除，可经「继续游戏」恢复');
+});
+
 test('destroy：清理打字机计时器与面板 ~ 键监听', () => {
   cleanSave();
   const m = mounted({ graph: mainGraph() });

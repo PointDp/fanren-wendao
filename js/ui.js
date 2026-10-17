@@ -178,6 +178,8 @@ FC.UI={
       const s=el('div','screen screen-main');
       const top=el('div','topbar');
       top.appendChild(btn('存档',function(){ menu=true; menuMsg=''; render(); }));
+      // 回到标题：对局不删（auto/检查点保留），供章末终局或中途歇手时退出主循环
+      top.appendChild(btn('标题',function(){ state=null; menu=false; menuMsg=''; render(); }));
       top.appendChild(btn(fast?'⏩ 加速中':'⏩ 加速',function(){
         fast=!fast;
         if(fast)completeTyping(); // 开启即补全当前文本；关闭后新文本恢复逐字
