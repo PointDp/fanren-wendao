@@ -1,5 +1,5 @@
 var FC=(typeof window!=='undefined'?window:globalThis).FC=(typeof window!=='undefined'?window:globalThis).FC||{};
-// 第六章《化神》：元婴岁月（hub：打探遗府/闭关攀层 净+80寿元每层）→ 灵气枯竭真相（定死：上古大战打碎界膜、
+// 第六章《化神》：元婴岁月（hub：打探遗府/闭关攀层 净+150寿元每层）→ 灵气枯竭真相（定死：上古大战打碎界膜、
 // 灵气外泄；基调“仙路尽头先是荒芜”；老祖洞府手札线 kurong_slain / 古籍考据线两线均在文）→ 通天遗府三钥：
 //   界纹玉钥（ch2_quanben 残页“气起于踵”兑现外门自开，玉钥+key_jade；无全本外门硬撼 injury+30、ch6_wall_broken）
 //   星核髓（combat：稳取看境界 cultivation>=17 / 险取看机缘 luck>=30；得手 injury+10；受挫 injury+35 可复探）
