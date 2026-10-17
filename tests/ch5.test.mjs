@@ -704,7 +704,7 @@ test('对决败·豁免：无卷败局（grudge<2 且无古卷）重伤续行走
   assert.equal(s.inventory['婴变古卷'] || 0, 0, '无卷败局古卷仍为 0');
   assert.equal(s.nodeId, 'ch5_兵解余波');
   assert.ok(!FC.Engine.view(s, G()).text.includes('帛书'), '无卷败局余波不得提及帛书');
-  drain(s);
+  drainTo(s, 'ch5_end'); // ch6 接线后 ch5_end 带继续项，须止于章末而非漫过
   assert.equal(s.nodeId, 'ch5_end', '对决败余波应入章末');
   assert.ok(!s.flags.kurong_slain, '败局不得置 kurong_slain');
   const endText = FC.Engine.view(s, G()).text;
@@ -755,7 +755,7 @@ test('对决败·持卷分支：持卷败文含帛书、古卷-1、余波含老�
   assert.equal(s.flags.ch5_duel_scroll_taken, true, '夺卷应落定夺卷旗');
   const tWave = FC.Engine.view(s, G()).text;
   assert.match(tWave, /帛书/, '持卷败局余波应含老祖携卷而去');
-  drain(s);
+  drainTo(s, 'ch5_end'); // ch6 接线后 ch5_end 带继续项，须止于章末而非漫过
   assert.equal(s.nodeId, 'ch5_end');
   // 无卷败（引擎）：无夺卷效果、无「失去」流水
   cleanSave();
