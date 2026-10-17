@@ -17,9 +17,11 @@
   <script src="js/content/realm.js"></script>
   <script src="js/content/items.js"></script>
   <script src="js/content/ch1.js"></script>
+  <script src="js/content/ch2.js"></script>
+  <script src="js/content/registry.js"></script>
   <script>
-    // 接线（Task 9 收尾）：挂载主 UI。剧情图由内容脚本提供（ch1.js 注册 FC.Content.graph
-    // 并把 meta.checkpointNode 注册进引擎，章首/章末检查点由引擎自动落盘）；
+    // 接线（Task 9 收尾，Task 2 扩）：挂载主 UI。剧情图由内容脚本提供（ch1.js 注册 FC.Content.graph，
+    // registry.js 把 FC.CH2… 的 graph 合并进来并注册各章章首检查点），章首/章末检查点由引擎自动落盘；
     // 开局菜单（继续游戏/新开局改名/读档）在 FC.UI 的开局屏内。
     // 内容缺失时 UI 显示"内容加载中"，不影响面板与其余功能。
     FC.UI.mount(document.getElementById('app'), {
