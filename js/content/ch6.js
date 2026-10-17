@@ -234,7 +234,7 @@ FC.CH6={
       },
       actions:[
         {label:'打探通天遗府的来历（坊市旧闻与古籍）',show:(s)=>!s.flags.ch6_yifu_heard,effects:[{type:'time',days:30}],goto:'ch6_遗府传闻'},
-        {label:'闭关静修（行气淬炼，元婴层数精进）',show:(s)=>s.cultivation<18,effects:[{type:'time',days:730},{type:'res',key:'cultivation',delta:1},{type:'res',key:'lifespan',delta:82}],stay:true},// 730 天折寿 2 年，显性 +82 补足净 +80/层（合同定死）
+        {label:'闭关静修（行气淬炼，元婴层数精进）',show:(s)=>s.cultivation<18,effects:[{type:'time',days:730},{type:'res',key:'cultivation',delta:1},{type:'res',key:'lifespan',delta:152}],stay:true},// 730 天折寿 2 年，显性 +152 补足净 +150/层（合同 4.2 元婴每层 +150，与 ch5_元婴成同价；勿与 ch5 结丹段的 +82/净+80 混淆）
         {label:'闭关静修（养伤将息，伤势大退）',show:(s)=>s.injury>0,effects:[{type:'time',days:30},{type:'res',key:'injury',delta:-50}],stay:true},
         {label:'遣赴坠星原，寻通天遗府（章末入府）',show:(s)=>true,effects:[{type:'time',days:3}],goto:'ch6_遗府外门'}
       ]

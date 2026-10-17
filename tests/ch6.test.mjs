@@ -8,7 +8,7 @@
 //      星核髓（combat 稳/险两案，稳看境界、险看机缘，受挫 injury+35 可复探）；通天令（枯荣令炼化 -1/+1；心魔暗路 inner_demon）
 //   6. 化神突破三路径：三钥齐→稳成；两钥+借枯荣遗泽→成但 injury+50；一钥以下燃寿→寿元-200
 //      （带婴变古卷则成；无卷兵解不吞检查点；豁免走余波回抉择）
-//   7. 突破门槛：直登化神台唯 cultivation===18 可见；闭关静修净 +80/层（time 730 + 显性 +82）
+//   7. 突破门槛：直登化神台唯 cultivation===18 可见；闭关静修净 +150/层（time 730 + 显性 +152，元婴合同价）
 //   8. 化神成：进层至化神、寿元 +300 精确、mortal_limit=true；天地异象与大限钟声定死段落在文
 //   9. 章末承接：ch6_end terminal、落款、mortal_limit 大限、心魔/枯荣令/通天令诸态
 //  10. 渲染回归：关键句逐段在正文（悬空分号防线）
@@ -316,7 +316,7 @@ function ch6Climb(s) { // 攀至元婴三层（18）
   const cult0 = s.cultivation;
   while (s.cultivation < 18) { step(s, '闭关静修（行气淬炼，元婴层数精进）'); drain(s); }
   assert.equal(s.cultivation, cult0 + (18 - cult0));
-  assert.ok(Math.abs((s.lifespanYears - life0) - (18 - cult0) * 80) < 1e-9, '闭关静修应净 +80 寿元/层');
+  assert.ok(Math.abs((s.lifespanYears - life0) - (18 - cult0) * 150) < 1e-9, '闭关静修应净 +150 寿元/层（元婴合同价，16→18 两层共 +300）');
 }
 function ch6Enter(s) { // 入府（默认全本线：外门自开）
   step(s, '遣赴坠星原，寻通天遗府（章末入府）');
@@ -413,7 +413,7 @@ test('开局承接：ch6_start 消费 ch5 出口（kurong_slain/婴变古卷/inn
 
 // ———— 走查 A·主线：打探 → 攀层 → 自开得玉钥 → 星核稳取 → 炼化通天令 → 三钥稳成 → 大限钟声 → 章末 ————
 
-test('走查 A：开局元婴二（枯荣令/古卷/全本承接）→ 打探（三钥传闻）→ 闭关攀层（净+80/层）→ 外门自开（气起于踵兑现，界纹玉钥）→ 星核稳取（星核髓+injury10）→ 炼化（枯荣令-1 通天令+1）→ 三钥唯稳成 → 化神成（化神、+300、mortal_limit）→ 大限钟声 → 章末 terminal', () => {
+test('走查 A：开局元婴二（枯荣令/古卷/全本承接）→ 打探（三钥传闻）→ 闭关攀层（净+150/层）→ 外门自开（气起于踵兑现，界纹玉钥）→ 星核稳取（星核髓+injury10）→ 炼化（枯荣令-1 通天令+1）→ 三钥唯稳成 → 化神成（化神、+300、mortal_limit）→ 大限钟声 → 章末 terminal', () => {
   const s = freshState();
   reachCh6(s);
   ch6Scout(s);

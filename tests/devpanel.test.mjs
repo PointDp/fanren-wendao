@@ -110,7 +110,7 @@ test('setRealm 越界截到合法境界并补足该层加成', () => {
   assert.equal(s.lifespanYears, 9 + 300); // 化神 +300
   FC.Dev.setRealm(s, -1);
   assert.equal(s.cultivation, 0);
-  assert.equal(s.lifespanYears, 9 + 300); // 凡人 +0
+  assert.equal(s.lifespanYears, 9 + 300); // 跳下不扣回：+300 保留（表值口径筑基段累计/结丹元婴段每层混用，见 js/devpanel.js _REALM_BONUS 注释）
 });
 
 test('jump 置 nodeId，目标不存在抛错且不改原值', () => {

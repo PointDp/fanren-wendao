@@ -523,6 +523,33 @@ test('机缘门槛：洞府需 knows_truth 或 luck≥15；凝魂丹需灵石≥
   assert.ok(true, 'luck 门槛由 enabled 函数表达，走查已覆盖 knows_truth 侧');
 });
 
+// —— 机缘软锁退路（终审 C1）：三门槛全不满足时必有可选退路，不软锁 ——
+
+test('机缘退路：knows_truth=0、luck<15、lingshi=0 三门槛全空，机缘节点仍有可选退路，走退路回 ch4_流亡且不算已择机缘', () => {
+  const s = freshState();
+  ch1Qianqi(s, ['杂役当值（领月钱，管三餐）', '杂役当值（领月钱，管三餐）', '杂役当值（领月钱，管三餐）'], ch1TailSilent);
+  ch2To(s, { tieVisits: 0, rescue: false });
+  enterCh3(s);
+  ch3Finish(s);
+  enterCh4(s);
+  step(s, '随溃流撤下山去（保命，与宗门库藏失散）'); step(s, '继续');
+  step(s, '继续'); step(s, '继续');
+  assert.equal(s.nodeId, 'ch4_流亡');
+  s.lingshi = 0;
+  s.karma.knows_truth = 0; s.luck = 5;
+  step(s, '打探结丹机缘（酒肆与坊市的传闻）'); // 打探 luck+1 → 6，仍 <15
+  assert.equal(s.nodeId, 'ch4_机缘');
+  const v = FC.Engine.view(s, G());
+  assert.equal(v.choices[pick(s, '访前辈洞府（残页同源的去处）')].enabled, false, '无 knows_truth 且 luck<15 洞府应禁用');
+  assert.equal(v.choices[pick(s, '购凝魂丹（坊市丹铺，灵石 -50）')].enabled, false, '灵石 0 凝魂丹应禁用');
+  assert.equal(v.choices[pick(s, '地火淬体（火山地脉，引路钱十灵石，淬体必受创）')].enabled, false, '灵石 0 地火应禁用');
+  const enabled = v.choices.filter((c) => c.enabled);
+  assert.ok(enabled.length >= 1, '三门槛全空也应有可选退路（软锁防线），可见项: ' + v.choices.map((c) => c.label + (c.enabled ? '（可用）' : '（禁用）')).join('/'));
+  step(s, '今日不伸手——先回流亡岁月，攒够本钱再来问价');
+  assert.equal(s.nodeId, 'ch4_流亡', '退路应回流亡 hub，可攒够本钱再来');
+  assert.ok(!s.flags.ch4_jiyuan_done, '退路不算已择机缘，日后可再来打探');
+});
+
 // ———— 结丹突破三分支 ————
 
 test('结丹·丹毒：无机缘硬闯 → 稳渡不可见；丹引强冲失败寿元-20、injury+50、pill_poison=1；疗伤补机缘后可重试成功', () => {

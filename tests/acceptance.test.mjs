@@ -202,6 +202,6 @@ test('验收·检查点机制：setCheckpointNode 注册的节点进入时写检
     assert.equal(s2.dead, 'combat');
     assert.equal(FC.Save.load('checkpoint').nodeId, 'start', 'death 节点不得写检查点');
   } finally {
-    FC.Engine.setCheckpointNode(kept); // 还原注册，避免污染其他用例
+    FC.Engine.setCheckpointNode(kept); // 重注册 kept：检查点注册为 Set 累积语义，重复注册是无害 no-op（原注册并未被移除，并非"还原"）
   }
 });
