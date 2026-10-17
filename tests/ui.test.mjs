@@ -16,6 +16,7 @@ const FC = globalThis.FC;
 const REAL_LS = globalThis.localStorage;
 function cleanSave() {
   FC.Save._mem.clear();
+  FC.Save.memoryFallback = false; // 内存兜底提示标记一并复位，保证用例隔离
   if (REAL_LS === undefined) delete globalThis.localStorage;
   else globalThis.localStorage = REAL_LS;
 }
@@ -266,6 +267,28 @@ test('choose 三种返回形状：{ok:false,reason:"disabled"} 时 UI 状态原�
   assert.deepEqual(FC.Save.load('auto'), before);
 });
 
+test('效果/时间流水：choose 后选项区上方显示一行中文摘要；无效果换节点后清除', () => {
+  cleanSave();
+  const m = mounted({ graph: mainGraph() });
+  btnByText(m.screen(), '新的开始')._fire('click');
+  choiceBtn(m.screen(), '继续')._fire('click');
+  assert.ok(!byClass(m.screen(), 'logline'), '尚未选择：无流水');
+  choiceBtn(m.screen(), '坊市跑腿')._fire('click'); // 灵石 +2、时间流逝 10 天
+  const line = byClass(m.screen(), 'logline');
+  assert.ok(line, 'choose 后应出现流水行');
+  assert.ok(line.textContent.includes('灵石 +2'), line.textContent);
+  assert.ok(line.textContent.includes('时间流逝 10 天'), line.textContent);
+  // 流水行位于选项区上方（正文之后）
+  const kids = m.screen().children;
+  assert.ok(kids.indexOf(line) < kids.indexOf(byClass(m.screen(), 'choices')));
+  choiceBtn(m.screen(), '打坐修炼')._fire('click'); // stay 动作：流水替换为本次摘要
+  const line2 = byClass(m.screen(), 'logline');
+  assert.ok(line2.textContent.includes('修为 +1'), line2.textContent);
+  assert.ok(!line2.textContent.includes('灵石 +2'), '旧流水应被替换');
+  choiceBtn(m.screen(), '出镇远行')._fire('click'); // 无效果动作换节点：流水清除不残留
+  assert.ok(!byClass(m.screen(), 'logline'), '旧流水不应残留');
+});
+
 // —— 打字机与加速 ——
 
 test('打字机：逐字显示（首字 ~28ms 计划）；点击正文区立即补全并清空计时器', () => {
@@ -415,6 +438,21 @@ test('开局界面读档入口：无存档时不显示；有存档时可进入�
   all(rows[2], 'button').find(b => b.textContent === '读取')._fire('click');
   assert.equal(m.handle.getState().name, '张三');
   assert.ok(m.screen().className.includes('screen-main'));
+});
+
+test('内存兜底提示：存档落入内存后标题与存档菜单显示 ⚠ 提示；未降级时不显示', () => {
+  cleanSave();
+  const m = mounted({ graph: mainGraph() });
+  assert.ok(!byClass(m.screen(), 'memory-notice'), '本会话尚无存取，不提示'); // 本会话尚无存取，不提示
+  btnByText(m.screen(), '新的开始')._fire('click'); // 引擎自动写章首检查点 → 内存兜底
+  btnByText(m.screen(), '标题')._fire('click');
+  const notice = byClass(m.screen(), 'memory-notice');
+  assert.ok(notice, '标题界面应显示内存兜底提示');
+  assert.ok(notice.textContent.includes('内存'), notice.textContent);
+  assert.ok(notice.textContent.includes('丢失'), notice.textContent);
+  btnByText(m.screen(), '新的开始')._fire('click'); // 重新进入对局
+  btnByText(m.screen(), '存档')._fire('click');
+  assert.ok(byClass(m.screen(), 'memory-notice'), '存档菜单也应显示内存兜底提示');
 });
 
 // —— 内容缺失与渲染容错 ——

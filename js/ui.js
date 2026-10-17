@@ -71,6 +71,7 @@ FC.UI={
     let state=null;   // 当前对局；null=开局界面
     let menu=false;   // 是否显示存读档菜单
     let menuMsg='';   // 菜单反馈行文案
+    let lastLog='';   // 最近一次 choose 的效果/时间流水（中文摘要，显示在选项区上方；空串不显示）
     let fast=false;   // 全局快进：开启后正文直接显示全文
     let fullText='';  // 当前正文全文
     let curKey=null;  // 打字机会话标识（节点+文本），跨重绘续接而非重打
@@ -120,6 +121,10 @@ FC.UI={
       screenEl=screen;
       container.appendChild(screenEl);
     }
+    // —— 存档降级提示：localStorage 不可用（存/取落到内存）时提醒关页即丢 ——
+    function memoryNotice(){
+      return FC.Save.memoryFallback?'⚠ 存档不可用，本次进度仅保存在内存中，关闭页面后将丢失':'';
+    }
     function render(){
       const g=graph();
       let s;
@@ -152,10 +157,12 @@ FC.UI={
       const s=el('div','screen screen-start');
       s.appendChild(el('h1','title','凡人问道·文字卷'));
       s.appendChild(el('p','subtitle','山村少年，伪灵根，一步一步向长生爬去。'));
+      const mem=memoryNotice();
+      if(mem)s.appendChild(el('p','memory-notice',mem));
       if(FC.Save.load('auto')){
         s.appendChild(btn('继续游戏',function(){
           const loaded=FC.Save.load('auto');
-          if(loaded){ state=loaded; render(); }
+          if(loaded){ state=loaded; lastLog=''; render(); }
         }));
       }
       const row=el('div','row');
@@ -167,6 +174,7 @@ FC.UI={
       s.appendChild(row);
       s.appendChild(btn('新的开始',function(){
         state=FC.Engine.start((nameIn.value||'').trim()||'李恒',graph());
+        lastLog='';
         render();
       }));
       // 读档入口：任一槽位有档即可进入菜单（无对局时菜单只读）
@@ -179,7 +187,7 @@ FC.UI={
       const top=el('div','topbar');
       top.appendChild(btn('存档',function(){ menu=true; menuMsg=''; render(); }));
       // 回到标题：对局不删（auto/检查点保留），供章末终局或中途歇手时退出主循环
-      top.appendChild(btn('标题',function(){ state=null; menu=false; menuMsg=''; render(); }));
+      top.appendChild(btn('标题',function(){ state=null; menu=false; menuMsg=''; lastLog=''; render(); }));
       top.appendChild(btn(fast?'⏩ 加速中':'⏩ 加速',function(){
         fast=!fast;
         if(fast)completeTyping(); // 开启即补全当前文本；关闭后新文本恢复逐字
@@ -193,6 +201,7 @@ FC.UI={
       const view=FC.Engine.view(state,g);
       fullText=view.text||'';
       updateText();
+      if(lastLog)s.appendChild(el('div','logline',lastLog)); // 效果/时间流水：一次选择的中文摘要
       const box=el('div','choices');
       // view.choices 即引擎 show 过滤后的可见项，序号与 choose 的过滤后索引一一对应
       view.choices.forEach(function(c,i){
@@ -216,8 +225,8 @@ FC.UI={
       let r=null;
       try{ r=FC.Engine.choose(state,g,i); }
       catch(e){ return; } // 无效序号等引擎级异常：UI 传入的 i 恒合法，不外泄
-      if(r&&r.dead){ render(); return; }      // 死亡 → 死亡画面（state.dead 已由引擎置位）
-      if(r&&r.ok===true){ render(); return; } // 推进成功 → 渲染新节点
+      if(r&&r.dead){ lastLog=''; render(); return; } // 死亡 → 死亡画面（state.dead 已由引擎置位）
+      if(r&&r.ok===true){ lastLog=(r.log||[]).join('　'); render(); return; } // 推进成功 → 流水随新节点显示
       // {ok:false,...}（disabled 等）：状态原样，不推进
     }
     function screenDeath(){
@@ -229,9 +238,10 @@ FC.UI={
         const cp=FC.Save.load('checkpoint'); // 死亡不吞进度：复活只读检查点，绝不改写
         if(!cp){ msg.textContent='没有找到检查点，无法苏醒。'; return; }
         state=cp;
+        lastLog='';
         render();
       }));
-      s.appendChild(btn('重新开始',function(){ state=null; render(); }));
+      s.appendChild(btn('重新开始',function(){ state=null; lastLog=''; render(); }));
       s.appendChild(msg);
       return s;
     }
@@ -242,6 +252,8 @@ FC.UI={
       s.appendChild(top);
       s.appendChild(el('h2','save-title','存档 / 读档'));
       s.appendChild(el('p','save-hint','自动档随剧情推进自动保存；检查点在新开局与章末自动保存，死亡时不更新；手动档一至三可随时存入。'));
+      const mem=memoryNotice();
+      if(mem)s.appendChild(el('p','memory-notice',mem));
       FC.UI.slotPlan(state).forEach(function(p){
         const row=el('div','slot-row');
         row.appendChild(el('span','slot-label',p.label));
@@ -257,6 +269,7 @@ FC.UI={
           state=loaded;
           menu=false;
           menuMsg='';
+          lastLog='';
           render();
         }));
         s.appendChild(row);

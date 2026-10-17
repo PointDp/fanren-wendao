@@ -40,6 +40,19 @@ body {
   white-space: pre-wrap;
   cursor: pointer;
 }
+/* 效果/时间流水：一次选择后的中文摘要（小字，正文与选项之间） */
+.logline {
+  font-size: 0.82em;
+  color: #8a5a2b;
+  text-align: center;
+  margin: 0 0 0.6em;
+}
+/* 存档降级内存提示（标题 / 存读档界面） */
+.memory-notice {
+  text-align: center;
+  font-size: 0.85em;
+  color: #8a5a2b;
+}
 /* 选项按钮：竖排、tag 徽标 */
 .choices {
   display: flex;

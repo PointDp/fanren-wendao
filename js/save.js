@@ -11,6 +11,9 @@ FC.Save={
   VERSION:1,
   // 内存兜底：localStorage 不可用期间写入的档（进程生命周期内有效）
   _mem:new Map(),
+  // 内存兜底标记：本会话内任一次存/取落到内存（localStorage 缺失或抛错）即置 true，
+  // 供 UI 在标题/存档界面显示"进度仅存内存、关页即丢"提示；不影响 save/load/list 的返回值
+  memoryFallback:false,
   // 取 localStorage：属性访问本身也可能抛错（浏览器安全策略），统一包 try/catch
   _ls(){
     try{ return globalThis.localStorage||null; }catch(e){ return null; }
@@ -32,6 +35,7 @@ FC.Save={
       catch(e){ /* 写入失败（隐私模式/配额满）：降级内存 */ }
     }
     FC.Save._mem.set(slot,json);
+    FC.Save.memoryFallback=true;
     return{ok:true,storage:'memory'};
   },
   // 读档：localStorage 优先，取不到或抛错再看内存兜底；损坏档与版本不符一律 null
@@ -42,7 +46,7 @@ FC.Save={
     if(ls){
       try{ json=ls.getItem(FC.Save.PREFIX+slot); }catch(e){ json=null; }
     }
-    if(json==null&&FC.Save._mem.has(slot))json=FC.Save._mem.get(slot);
+    if(json==null&&FC.Save._mem.has(slot)){ json=FC.Save._mem.get(slot); FC.Save.memoryFallback=true; }
     if(json==null)return null;
     let data;
     try{ data=JSON.parse(json); }catch(e){ return null; }
