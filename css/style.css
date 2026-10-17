@@ -1,0 +1,7 @@
+/* 《凡人问道·文字卷》基础排版：正文衬线、行高 1.9、最大宽度 42em 居中 */
+body {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, serif;
+  line-height: 1.9;
+  max-width: 42em;
+  margin: 0 auto;
+}
