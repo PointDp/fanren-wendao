@@ -476,7 +476,7 @@ test('佣斗·弃货胜：舍货保人+luck≥25 → pass 走弃货结尾（雇�
 
 // ———— 机缘门槛：洞府/凝魂丹 gates + 地火髓 injury+30 必经 ————
 
-test('机缘门槛：洞府需 knows_truth 或 luck≥15；凝魂丹需灵石≥50（可见但禁用）；地火常开且 injury+30 必经', () => {
+test('机缘门槛：洞府需 knows_truth 或 luck≥15；凝魂丹需灵石≥50（可见但禁用）；地火·灵石不足十枚时禁用，injury+30 必经', () => {
   const s = freshState();
   ch1Qianqi(s, ['杂役当值（领月钱，管三餐）', '杂役当值（领月钱，管三餐）', '杂役当值（领月钱，管三餐）'], ch1TailSilent);
   ch2To(s, { tieVisits: 0, rescue: false });
@@ -673,6 +673,17 @@ test('文案分支对照：师姐殒/别两版互异；旧账 enemy_inner 胡威
   const tTie = FC.CH4.graph['ch4_护送'].text(sTie);
   assert.match(tTie, /张铁/, '走商线护送应有张铁');
   assert.doesNotMatch(tTie, /张家村.*手印|家书.*手印/, '走商线不得出现报丧追忆');
+});
+
+// —— 渲染回归：ch4_撤离 悬空分号修复（98-108 段曾因行尾分号成为孤立表达式不渲染）——
+
+test('渲染回归：ch4_撤离 正文应含外门弟子腰牌段、「身外之物」句与「扔不掉」句', () => {
+  const s = FC.State.create('李恒');
+  const t = FC.CH4.graph['ch4_撤离'].text(s);
+  assert.match(t, /外门弟子把腰牌解下来/, 'ch4_撤离 应含外门弟子腰牌段');
+  assert.match(t, /装作没看见/, 'ch4_撤离 应含腰牌段收束句');
+  assert.match(t, /身外之物烧得掉/, 'ch4_撤离 应含「身外之物」句');
+  assert.match(t, /有些东西，扔不掉/, 'ch4_撤离 应含「扔不掉」句');
 });
 
 // ———— 字数 ————
