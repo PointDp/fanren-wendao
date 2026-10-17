@@ -1,0 +1,22 @@
+var FC=(typeof window!=='undefined'?window:globalThis).FC=(typeof window!=='undefined'?window:globalThis).FC||{};
+// 物品表（Task 8）：id→{name,类型,描述,基础价(灵石)}。v1 约 12-16 件，供坊市买卖与剧情落袋。
+// 背包里只存 id 与数量（state.inventory），此处登记名称与价值；剧情引用的物品 id 必须在本表中。
+FC.ITEMS={
+  '回气散':{name:'回气散',kind:'丹药',desc:'最贱的养气散药，入口发苦，能压住练功后的气血翻涌。',price:3},
+  '伤药':{name:'伤药',kind:'丹药',desc:'灰扑扑的药膏，敷上凉丝丝的，专治皮肉伤。',price:2},
+  '清心露':{name:'清心露',kind:'丹药',desc:'一小瓶琥珀色的露水，安神定惊，走火入魔前灌下或能保命。',price:5},
+  '金刃符':{name:'金刃符',kind:'符箓',desc:'黄纸朱砂，拍出时化作一道金芒，炼气修士也能伤人。',price:8},
+  '火弹符':{name:'火弹符',kind:'符箓',desc:'拍出一团火球，吓唬野狗够用，吓唬修士不够。',price:5},
+  '引气诀残页':{name:'引气诀残页',kind:'功法',desc:'发黄的残页，字迹古拙，开篇一句“气起于踵，循跗而上”。来历不明。',price:0},
+  '长春功抄本':{name:'长春功抄本',kind:'功法',desc:'落云宗发给杂役的入门导引，纸都软了，据说修到头也就炼气三层。',price:2},
+  '凝露草':{name:'凝露草',kind:'灵草',desc:'叶背凝着露珠似的灵液，三株便能换半块灵石，管事们看得极紧。',price:15},
+  '灵砂':{name:'灵砂',kind:'材料',desc:'研磨灵石剩下的碎屑，掺进符墨里能省几分力气。',price:4},
+  '符纸':{name:'符纸',kind:'材料',desc:'裁得整整齐齐的黄麻纸，画符前须以灵砂水浸过。',price:2},
+  '杂役月牌':{name:'杂役月牌',kind:'信物',desc:'落云宗外门杂役的身份木牌，背面烙着“役”字。丢了补不来。',price:1},
+  '苦契副本':{name:'苦契副本',kind:'信物',desc:'十年苦契的副联，朱印鲜红。你留着它，是提醒自己签过什么。',price:0},
+  '油纸':{name:'油纸',kind:'杂物',desc:'一张刷过桐油的厚纸，糊窗挡光，雨夜练功全靠它遮人耳目。',price:1},
+  '火折子':{name:'火折子',kind:'杂物',desc:'竹筒里一星暗火，吹口气就亮，夜里走动离不得。',price:1},
+  '浊酒':{name:'浊酒',kind:'杂物',desc:'镇上最贱的烧酒，辛辣呛喉。杂役院里，这就是人情。',price:1},
+  '粗盐':{name:'粗盐',kind:'杂物',desc:'泛青的粗盐粒，山里人当宝贝，镇上却贱得很。',price:1}
+};
+if(typeof module!=='undefined'&&module.exports){module.exports=FC;}
