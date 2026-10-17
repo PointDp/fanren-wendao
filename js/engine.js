@@ -46,11 +46,14 @@ FC.Engine={
     const r=FC.Save.save(state,'auto');
     if(!r||r.ok!==true)throw new Error('自动存档失败: '+(r?r.reason:'无返回'));
   },
-  // —— 检查点接线（Task 9）：章首（新开局）与章末节点（内容经 setCheckpointNode 注册）写 'checkpoint' ——
-  // 注册表：默认 null（不写章末检查点）；内容脚本注册 FC.Content.meta.checkpointNode 后生效
-  _checkpointNode:null,
-  setCheckpointNode(nodeId){
-    FC.Engine._checkpointNode=nodeId||null;
+  // —— 检查点接线（Task 9 / 人界篇系统扩容）：章首（新开局）与章末节点（内容经 setCheckpointNode 注册）写 'checkpoint' ——
+  // 注册表：Set（null/空 = 不写章末检查点）；setCheckpointNode 支持字符串或数组，多次调用累积且自动去重，
+  // 供多章内容各自注册章末节点；既有单值注册（ch1.js）行为不变
+  _checkpointNodes:null,
+  setCheckpointNode(nodeOrArray){
+    if(!FC.Engine._checkpointNodes)FC.Engine._checkpointNodes=new Set();
+    const list=Array.isArray(nodeOrArray)?nodeOrArray:[nodeOrArray];
+    for(const id of list){ if(typeof id==='string'&&id)FC.Engine._checkpointNodes.add(id); }
   },
   // 写检查点：死亡不吞进度——死亡状态下不存在任何写检查点的路径（防御性跳过；
   // Save 层对死亡存 checkpoint 亦直接拒绝，双保险）；失败抛错（与自动存档同一严格度）
@@ -60,7 +63,7 @@ FC.Engine={
     if(!r||r.ok!==true)throw new Error('检查点保存失败: '+(r?r.reason:'无返回'));
   },
   // 进入节点：置 nodeId；hub 进入即自动存档；death 进入即结算死亡（复用效果系统，尊重豁免）；
-  // 进入内容注册的章末节点（存活时）写检查点；返回补充 log
+  // 进入内容注册的任一检查点节点（存活时）写检查点；返回补充 log
   _enter(state,graph,id){
     const node=FC.Engine._check(graph,id);
     state.nodeId=id;
@@ -69,7 +72,7 @@ FC.Engine={
     }else if(node.type==='death'){
       return FC.Effects.apply(state,[{type:'death',cause:node.cause}]).log; // 提前返回：death 节点绝不写检查点
     }
-    if(id===FC.Engine._checkpointNode)FC.Engine._checkpoint(state);
+    if(FC.Engine._checkpointNodes&&FC.Engine._checkpointNodes.has(id))FC.Engine._checkpoint(state);
     return [];
   },
   // 渲染视图：纯读取，不改 state。show 为 false 的项不出现，tag 缺省 ''；death 与终局场景（无 goto）无选项

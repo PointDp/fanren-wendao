@@ -139,11 +139,11 @@ test('summary 含境界名/灵石数/寿元年数/天数/伤势/机缘/背包摘
 
 // —— 纯逻辑：死因结局文 ——
 
-test('deathText：四档死因各返回非空且互不相同的结局文；未知死因有兜底', () => {
-  const causes = ['lifespan', 'combat', 'poison', 'exiled'];
+test('deathText：六档死因各返回非空且互不相同的结局文；未知死因有兜底', () => {
+  const causes = ['lifespan', 'combat', 'poison', 'exiled', '兵解', '丹毒'];
   const texts = causes.map(c => { const s = FC.State.create('李恒'); s.dead = c; return FC.UI.deathText(s); });
   texts.forEach((t, i) => assert.ok(typeof t === 'string' && t.length > 0, causes[i]));
-  assert.equal(new Set(texts).size, 4);
+  assert.equal(new Set(texts).size, 6);
   const s = FC.State.create('李恒'); s.dead = '神秘死因';
   const t = FC.UI.deathText(s);
   assert.ok(t.length > 0);

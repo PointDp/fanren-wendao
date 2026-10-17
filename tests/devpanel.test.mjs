@@ -62,7 +62,7 @@ test('setRes 越界按规则截断：伤势 0..100、修为境界表下标、灵
   const s = FC.State.create('李恒');
   assert.equal(FC.Dev.setRes(s, 'injury', 150).injury, 100);
   assert.equal(FC.Dev.setRes(s, 'injury', -5).injury, 0);
-  assert.equal(FC.Dev.setRes(s, 'cultivation', 99).cultivation, 12);
+  assert.equal(FC.Dev.setRes(s, 'cultivation', 99).cultivation, 19);
   assert.equal(FC.Dev.setRes(s, 'cultivation', -3).cultivation, 0);
   assert.equal(FC.Dev.setRes(s, 'lingshi', -1).lingshi, 0);
   assert.equal(FC.Dev.setRes(s, 'lifespanYears', -1).lifespanYears, 0);
@@ -106,11 +106,11 @@ test('setRealm 换境界并按表加寿：炼气段 +0、筑基起每层 +40', (
 test('setRealm 越界截到合法境界并补足该层加成', () => {
   const s = FC.State.create('李恒');
   FC.Dev.setRealm(s, 99);
-  assert.equal(s.cultivation, 12);
-  assert.equal(s.lifespanYears, 9 + 120);
+  assert.equal(s.cultivation, 19);
+  assert.equal(s.lifespanYears, 9 + 300); // 化神 +300
   FC.Dev.setRealm(s, -1);
   assert.equal(s.cultivation, 0);
-  assert.equal(s.lifespanYears, 9 + 120); // 凡人 +0
+  assert.equal(s.lifespanYears, 9 + 300); // 凡人 +0
 });
 
 test('jump 置 nodeId，目标不存在抛错且不改原值', () => {
