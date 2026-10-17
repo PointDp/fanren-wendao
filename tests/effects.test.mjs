@@ -48,6 +48,18 @@ test('res injury 走 clampInjury 截到 0..100，log 记实际变化', () => {
   assert.equal(s2.injury, 0);
 });
 
+test('res lingshi 不为负：扣到负数截 0，log 记实际生效值（与 item 一致）', () => {
+  const s = fresh(); // 开局灵石 2
+  const r = FC.Effects.apply(s, [{ type: 'res', key: 'lingshi', delta: -3 }]);
+  assert.equal(s.lingshi, 0);
+  assert.deepEqual(r.log, ['灵石 -2']); // 实际只 -2，log 不撒谎
+  FC.Effects.apply(s, [{ type: 'res', key: 'lingshi', delta: -1 }]);
+  assert.equal(s.lingshi, 0);
+  const s3 = fresh();
+  FC.Effects.apply(s3, [{ type: 'res', key: 'lingshi', delta: 5 }]);
+  assert.equal(s3.lingshi, 7); // 正向不受影响
+});
+
 test('item 新键从 0 起累加，log 为 获得 ×N', () => {
   const s = fresh();
   const r = FC.Effects.apply(s, [{ type: 'item', id: '回气散', count: 1 }]);

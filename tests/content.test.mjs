@@ -419,6 +419,24 @@ test('走查·夜探强闯：无准备莽进 → 死亡（combat 四档结局文
   assert.equal(s2.nodeId, '灵田夜逃');
 });
 
+test('访张铁门槛：灵石不足 1 时选项可见但不可用，choose 拒绝执行', () => {
+  const s = freshState();
+  step(s, '继续'); step(s, '继续'); step(s, '继续');
+  step(s, '先活下来：留镇当账房伙计');
+  drain(s); // 镇中账房 → 王管事采买 → 外门点卯 → 外门岁月
+  assert.equal(s.nodeId, '外门岁月');
+  s.lingshi = 0;
+  const v = FC.Engine.view(s, FC.Content.graph);
+  const i = pick(s, '访张铁（打酒，听杂役院的闲话）');
+  assert.equal(v.choices[i].enabled, false, '选项应可见但禁用');
+  const r = FC.Engine.choose(s, FC.Content.graph, i);
+  assert.deepEqual(r, { ok: false, reason: 'disabled' });
+  assert.equal(s.nodeId, '外门岁月');
+  assert.equal(s.karma.ch1_month || 0, 0, '被拒后时间与因果不入账');
+  s.lingshi = 1;
+  assert.equal(FC.Engine.view(s, FC.Content.graph).choices[pick(s, '访张铁（打酒，听杂役院的闲话）')].enabled, true);
+});
+
 test('hub 月循环门：不足三月只有常规行动，满三月只余秋收', () => {
   const s = freshState();
   step(s, '继续'); step(s, '继续'); step(s, '继续');

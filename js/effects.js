@@ -17,12 +17,13 @@ FC.Effects={
     }
     return {state:state,log:log};
   },
-  // 资源增减；injury 与状态模型同一约束，走 clampInjury 截到 0..100（log 记实际变化量）
+  // 资源增减；injury 走 clampInjury 截到 0..100、lingshi 截到 ≥0（与 item 同规），log 记实际变化量
   _res(state,e,log){
     const target=e.key==='lifespan'?'lifespanYears':e.key;
     const before=state[target];
     const raw=before+e.delta;
-    const after=e.key==='injury'?FC.State.clampInjury(raw):raw;
+    const after=e.key==='injury'?FC.State.clampInjury(raw)
+      :(e.key==='lingshi'?Math.max(0,raw):raw);
     state[target]=after;
     const applied=after-before;
     log.push(FC.Effects.RES_LABEL[e.key]+' '+((applied>=0?'+':'')+applied)+(e.key==='lifespan'?' 年':''));

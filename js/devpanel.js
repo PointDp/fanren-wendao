@@ -44,6 +44,12 @@ FC.Dev={
   setLuck(state,v){
     return FC.Dev.setRes(state,'luck',v);
   },
+  // 存档失败原因 → 中文（dead→已死亡、slot→无效档位；其余原样兜底，空值给未知原因）
+  reasonText(reason){
+    if(reason==='dead')return '已死亡';
+    if(reason==='slot')return '无效档位';
+    return reason?String(reason):'未知原因';
+  },
   // —— DOM 面板 ——（只用最窄 DOM 面：createElement/appendChild/addEventListener/style.*/textContent/
   // 普通属性赋值，便于假环境实现；绝不使用 innerHTML/querySelector）
   mount(el,getState,rerender,env){
@@ -123,6 +129,17 @@ FC.Dev={
       const v=num(luckIn.value); if(v==null){ setStatus('请输入有效数字'); return; }
       FC.Dev.setLuck(s,v); setStatus('机缘已设置为 '+s.luck);
     }));
+    // 一键操作（资源区旁）：回满=伤势清零（复用 setRes → clampInjury）、清空=背包置空；
+    // 均经 button→act 统一错误处理，动作后同步控件并重绘主界面
+    const quickRow=row('fc-dev-quick'); label(quickRow,'快捷');
+    button(quickRow,'一键回满',function(s){
+      FC.Dev.setRes(s,'injury',0);
+      setStatus('伤势已清零');
+    });
+    button(quickRow,'一键清空',function(s){
+      s.inventory={};
+      setStatus('背包已清空');
+    });
     // 背包物品（添加为正数、移除按数量扣，库存不足自动截 0）
     const itemRow=row('fc-dev-item'); label(itemRow,'物品');
     const itemIdIn=input(itemRow,'text'); itemIdIn.placeholder='物品 id';
@@ -166,7 +183,7 @@ FC.Dev={
     button(cpRow,'存检查点',function(s){
       const r=FC.Save.save(s,'checkpoint');
       if(r&&r.ok===true)setStatus('检查点已保存');
-      else setStatus('检查点保存失败：'+(r?r.reason:'无返回'));
+      else setStatus('检查点保存失败：'+(r?FC.Dev.reasonText(r.reason):'无返回'));
     });
     // 控件 ← 状态：打开面板与每次动作后刷新，避免显示陈旧值；文本输入（物品/节点 id）不回写
     function sync(){

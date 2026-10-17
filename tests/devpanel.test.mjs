@@ -252,6 +252,38 @@ test('mount：无对局时操作给出友好提示且不崩溃', () => {
   assert.ok(m.handle.status.textContent.includes('尚未开始对局'));
 });
 
+test('reasonText：检查点失败原因映射中文，未知原因原样兜底', () => {
+  assert.equal(FC.Dev.reasonText('dead'), '已死亡');
+  assert.equal(FC.Dev.reasonText('slot'), '无效档位');
+  assert.equal(FC.Dev.reasonText('写满配额'), '写满配额');
+  assert.equal(FC.Dev.reasonText(undefined), '未知原因');
+});
+
+test('mount：死亡状态下存检查点提示中文原因', () => {
+  const s = FC.State.create('李恒');
+  s.dead = 'lifespan';
+  const m = mounted(s);
+  btn(byId(m.handle.panel, 'fc-dev-checkpoint'), '存检查点')._fire('click');
+  assert.ok(m.handle.status.textContent.includes('检查点保存失败：已死亡'));
+  assert.ok(!m.handle.status.textContent.includes('dead'), '英文 reason 不应外泄');
+});
+
+test('mount：一键回满伤势清零、一键清空背包置空，走 act 并重绘', () => {
+  const s = FC.State.create('李恒');
+  s.injury = 80;
+  s.inventory['灵草'] = 3; s.inventory['金刃符'] = 1;
+  const m = mounted(s);
+  const row = byId(m.handle.panel, 'fc-dev-quick');
+  assert.ok(row, '面板应有快捷操作区');
+  btn(row, '一键回满')._fire('click');
+  assert.equal(m.state().injury, 0);
+  assert.ok(m.handle.status.textContent.includes('伤势'));
+  btn(row, '一键清空')._fire('click');
+  assert.deepEqual(m.state().inventory, {});
+  assert.ok(m.handle.status.textContent.includes('清空'));
+  assert.ok(m.renders() > 0);
+});
+
 test('mount：destroy 移除 ~ 键监听', () => {
   const m = mounted(FC.State.create('李恒'));
   m.handle.destroy();
