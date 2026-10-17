@@ -9,8 +9,9 @@
 //   7. 心魔劫：三执念入口按因果解锁（knows_truth/took_blame/silent_witness）；直面了结置旗、全了方见直上；逃避 → inner_demon=1
 //   8. 元婴突破：寿元每层 +150；古卷稳渡；无卷强冲首挫 injury+80、再冲必成；带隐患突破旗标不清（终章承接）
 //   9. 带魔强冲 → 兵解：检查点仍是 ch5_start 存活进度（死亡不吞）、死亡写检查点被拒、豁免走余波回元婴抉择
-//  10. 最终对决（combat）：胜=境界≥元婴一层 且（婴变古卷 或 kurong_grudge≥2）→ kurong_slain=1、得枯荣令；
-//      败 → 兵解（检查点不吞）；胜文两线（卷中婴变/四面合围）分支化
+//  10. 最终对决（combat）：胜=境界≥元婴一层 且（持婴变古卷 或 kurong_grudge≥2，二者居一即可，持卷忍让线 grudge=1 同样判胜）
+//      → kurong_slain=1、得枯荣令；败 → 兵解（检查点不吞）；胜文两线（卷中婴变/四面合围）分支化；
+//      败路持卷分支：持卷败文含帛书且古卷-1（旗 ch5_duel_scroll_taken），无卷败文不提帛书、无「失去」流水
 //  11. 章末：terminal、定死承接（pill_poison/saved_mortals/demon_war_battlefield/枯荣令/心魔隐患/灵气伏笔/落款）
 //  12. 渲染回归：关键句逐段在正文（悬空分号防线）
 //  13. 字数 ≥25000
@@ -240,7 +241,7 @@ function ch5Counter(s) { // 借势反制
   assert.equal(s.nodeId, 'ch5_借势反制');
   step(s, '继续'); // 效果离开时入账
   assert.equal(s.karma.kurong_grudge, 2, '借势反制应 grudge 累加至 2');
-  assert.equal(s.flags.ch5_kurong_counter, true);
+  assert.equal(s.flags.ch5_kurong_reacted, true, '借势反应旗应落定（打探收口依赖）');
   assert.equal(s.nodeId, 'ch5_散修岁月');
 }
 function ch5Century(s) { // 闭关百年（精确断言在用例内做，这里只走位）
@@ -615,7 +616,7 @@ test('忍让避锋：grudge 不变、luck -2（失机缘）、旗标落定，与
   step(s, '继续');
   assert.equal(s.karma.kurong_grudge, grudge0, '忍让 grudge 不得累加');
   assert.equal(s.luck, luck0 - 2, '忍让应失机缘（luck-2）');
-  assert.equal(s.flags.ch5_kurong_yielded, true);
+  assert.equal(s.flags.ch5_kurong_reacted, true, '忍让反应旗应落定（打探收口依赖）');
   assert.equal(s.nodeId, 'ch5_散修岁月');
   // 打探行动应收口（已反应过）
   const v = FC.Engine.view(s, G());
@@ -683,27 +684,106 @@ test('对决胜文两线：古卷线含「卷中婴变」、借势线含「四�
 
 // ———— 对决败·豁免：余波走对决分支（老祖在世线）———
 
-test('对决败·豁免：重伤续行走余波对决分支（古卷被夺、老祖在世），章末含老祖在世线且不落 kurong_slain', () => {
+test('对决败·豁免：无卷败局（grudge<2 且无古卷）重伤续行走余波老祖在世线，章末不落 kurong_slain、古卷不曾被夺', () => {
   cleanSave();
   const s = FC.State.create('李恒');
   s.deathExempt = true;
-  s.cultivation = 16; s.inventory['婴变古卷'] = 1; s.karma.kurong_grudge = 1; s.injury = 0;
+  s.cultivation = 16; s.inventory['婴变古卷'] = 0; s.karma.kurong_grudge = 1; s.injury = 0;
   s.nodeId = 'ch5_最终对决';
   step(s, '正面迎战：婴变初啼，以战止战');
-  assert.equal(s.nodeId, 'ch5_对决败', '豁免下败仍入败文');
-  step(s, '继续'); // 效果离开时结算：古卷-1、旗、死亡→豁免重伤
+  assert.equal(s.nodeId, 'ch5_对决败', '无卷且 grudge<2 应判败（合同：胜需持卷或 grudge≥2）');
+  const vFail = FC.Engine.view(s, G());
+  assert.ok(!vFail.text.includes('帛书'), '无卷败文不得提及帛书');
+  assert.equal(vFail.choices.length, 1, '败局无卷应只有一条继续路（不产生夺卷分支）');
+  step(s, '继续'); // 效果离开时结算：旗、死亡→豁免重伤（无夺卷效果）
   assert.equal(s.dead, null, '豁免下对决败应重伤续行');
   assert.equal(s.injury, 100);
   assert.equal(s.flags.cheated_death_兵解, true);
   assert.equal(s.flags.ch5_duel_lost, true, '对决败应落定败局旗');
-  assert.equal(s.inventory['婴变古卷'] || 0, 0, '败局古卷应被夺');
+  assert.ok(!s.flags.ch5_duel_scroll_taken, '无卷败局不得落夺卷旗');
+  assert.equal(s.inventory['婴变古卷'] || 0, 0, '无卷败局古卷仍为 0');
   assert.equal(s.nodeId, 'ch5_兵解余波');
+  assert.ok(!FC.Engine.view(s, G()).text.includes('帛书'), '无卷败局余波不得提及帛书');
   drain(s);
   assert.equal(s.nodeId, 'ch5_end', '对决败余波应入章末');
   assert.ok(!s.flags.kurong_slain, '败局不得置 kurong_slain');
   const endText = FC.Engine.view(s, G()).text;
   assert.match(endText, /老祖|枯荣/, '老祖在世线章末应提及枯荣老祖');
   assert.match(endText, /第五章《元婴》终/);
+});
+
+// ———— 对决胜规则（合同）：境界 ≥ 元婴一层 且（持古卷 或 grudge≥2）————
+
+test('对决胜规则（合同 OR）：持卷+境界达标但 grudge=1（忍让线）必须判胜；境界未达标即便 grudge≥2 也判败', () => {
+  // 持卷 + grudge=1：引擎判胜（忍让线不得被兵解吞掉）
+  cleanSave();
+  const s = FC.State.create('李恒');
+  s.cultivation = 16; s.inventory['婴变古卷'] = 1; s.karma.kurong_grudge = 1; s.injury = 0;
+  s.nodeId = 'ch5_最终对决';
+  step(s, '正面迎战：婴变初啼，以战止战');
+  assert.equal(s.nodeId, 'ch5_对决胜', '持卷+元婴一层应判胜（OR 规则，grudge=1 不拦）');
+  const tWin = FC.Engine.view(s, G()).text;
+  assert.match(tWin, /卷中婴变/, '持卷胜文应含古卷线');
+  assert.doesNotMatch(tWin, /四面合围/, 'grudge<2 不得出现围杀段措辞');
+  step(s, '继续');
+  assert.equal(s.flags.kurong_slain, true, '持卷胜应置 kurong_slain');
+  assert.equal(s.inventory['枯荣令'], 1, '持卷胜应得枯荣令');
+  // 境界门槛：grudge≥2 但境界未到元婴一层 → 判败
+  cleanSave();
+  const s2 = FC.State.create('李恒');
+  s2.cultivation = 15; s2.inventory['婴变古卷'] = 0; s2.karma.kurong_grudge = 2; s2.injury = 0;
+  s2.nodeId = 'ch5_最终对决';
+  step(s2, '正面迎战：婴变初啼，以战止战');
+  assert.equal(s2.nodeId, 'ch5_对决败', '境界<元婴一层应判败（境界门槛不因 grudge 松动）');
+});
+
+// ———— 对决败·持卷分支：夺卷文案与效果只在持卷时生效 ————
+
+test('对决败·持卷分支：持卷败文含帛书、古卷-1、余波含老祖携卷而去；无卷败文不提帛书、无「失去婴变古卷」流水', () => {
+  // 持卷败（豁免）：境界未达元婴一层 → 败局，持卷仍被夺
+  cleanSave();
+  const s = FC.State.create('李恒');
+  s.deathExempt = true;
+  s.cultivation = 15; s.inventory['婴变古卷'] = 1; s.karma.kurong_grudge = 1; s.injury = 0;
+  s.nodeId = 'ch5_最终对决';
+  step(s, '正面迎战：婴变初啼，以战止战');
+  assert.equal(s.nodeId, 'ch5_对决败');
+  assert.ok(FC.Engine.view(s, G()).text.includes('帛书'), '持卷败文应有夺卷段（帛书）');
+  step(s, '继续');
+  assert.equal(s.dead, null, '豁免下持卷败应重伤续行');
+  assert.equal(s.inventory['婴变古卷'] || 0, 0, '持卷败局古卷应被夺（-1）');
+  assert.equal(s.flags.ch5_duel_scroll_taken, true, '夺卷应落定夺卷旗');
+  const tWave = FC.Engine.view(s, G()).text;
+  assert.match(tWave, /帛书/, '持卷败局余波应含老祖携卷而去');
+  drain(s);
+  assert.equal(s.nodeId, 'ch5_end');
+  // 无卷败（引擎）：无夺卷效果、无「失去」流水
+  cleanSave();
+  const s2 = FC.State.create('李恒');
+  s2.deathExempt = true;
+  s2.cultivation = 16; s2.inventory['婴变古卷'] = 0; s2.karma.kurong_grudge = 1; s2.injury = 0;
+  s2.nodeId = 'ch5_最终对决';
+  step(s2, '正面迎战：婴变初啼，以战止战');
+  const r = FC.Engine.choose(s2, G(), pick(s2, '继续'));
+  assert.equal(r.ok, true);
+  assert.ok(r.log.every((l) => l.indexOf('婴变古卷') < 0), '无卷败局不得产生「失去 婴变古卷」流水: ' + r.log.join('；'));
+  assert.ok(!s2.flags.ch5_duel_scroll_taken, '无卷败局不得落夺卷旗');
+});
+
+// ———— 无卷强冲对带心魔者同样可见（controller ruling）————
+
+test('无卷强冲对带心魔者同样可见：inner_demon+无卷+伤<50 应见强冲选项（与带魔孤注一掷并存）；持卷者仍不见强冲', () => {
+  const mk = (fn) => { const s = FC.State.create('李恒'); s.nodeId = 'ch5_元婴抉择'; fn(s); return s; };
+  const labels = (s) => FC.Engine.view(s, G()).choices.map((c) => c.label);
+  const hasQ = (s) => labels(s).some((l) => l === '无卷强冲，以伤换关（火候未到则重伤）');
+  const sD = mk((s) => { s.flags.inner_demon = true; s.injury = 20; });
+  assert.ok(hasQ(sD), 'inner_demon+无卷 应见无卷强冲（不再只剩带魔/兵解一条路）');
+  assert.ok(labels(sD).some((l) => l.indexOf('带心魔') >= 0), '带魔选项仍在');
+  const sH = mk((s) => { s.flags.inner_demon = true; s.injury = 20; s.inventory['婴变古卷'] = 1; });
+  assert.ok(!hasQ(sH), '持卷者不得见无卷强冲');
+  assert.ok(labels(sH).some((l) => l.indexOf('婴变古卷') >= 0), '持卷稳渡仍在');
+  const sClean = mk((s) => { s.injury = 20; });
+  assert.ok(hasQ(sClean), '无隐患无卷仍应见强冲（原路径不回退）');
 });
 
 // ———— 章末承接 ————
