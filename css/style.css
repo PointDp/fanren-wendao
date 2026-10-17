@@ -5,3 +5,119 @@ body {
   max-width: 42em;
   margin: 0 auto;
 }
+
+/* —— 主 UI（Task 7）—— */
+/* 顶栏：存档 / 加速按钮，靠右（加速居最右） */
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+.topbar button {
+  font: inherit;
+  font-size: 0.85em;
+  background: none;
+  border: 1px solid #a08b6a;
+  border-radius: 3px;
+  padding: 1px 10px;
+  color: #6b5a3e;
+  cursor: pointer;
+}
+/* 状态栏：分隔线上下，小字居中 */
+.statusbar {
+  border-top: 1px solid #c9bda5;
+  border-bottom: 1px solid #c9bda5;
+  padding: 5px 0;
+  font-size: 0.86em;
+  color: #6b5a3e;
+  text-align: center;
+}
+/* 正文区：打字机逐字显示，点击立即补全 */
+.gametext {
+  margin: 1.4em 0 1em;
+  min-height: 5em;
+  white-space: pre-wrap;
+  cursor: pointer;
+}
+/* 选项按钮：竖排、tag 徽标 */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 1.6em 0 2em;
+}
+.choices button {
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 1px solid #a08b6a;
+  border-radius: 4px;
+  padding: 5px 14px;
+  cursor: pointer;
+  color: inherit;
+}
+.choices button:hover:not(:disabled) { background: #f4efe4; }
+.choices button:disabled { color: #b0a48c; cursor: default; border-style: dotted; }
+.badge {
+  margin-left: 0.6em;
+  font-size: 0.78em;
+  color: #8a5a2b;
+  border: 1px solid #c9a86a;
+  border-radius: 3px;
+  padding: 0 0.45em;
+  vertical-align: 0.08em;
+}
+/* 开局 / 死亡 / 菜单屏 */
+.title { text-align: center; letter-spacing: 0.18em; margin: 2.2em 0 0.4em; font-weight: bold; }
+.subtitle { text-align: center; color: #7a6a4f; margin: 0 0 1.6em; }
+.notice { text-align: center; color: #8a5a2b; }
+.screen-start .row { text-align: center; margin: 0.8em 0; }
+.screen-start .row-label { color: #7a6a4f; }
+.screen-start input {
+  font: inherit;
+  width: 10em;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #a08b6a;
+  text-align: center;
+  color: inherit;
+}
+.screen-start button, .screen-death button {
+  font: inherit;
+  display: block;
+  margin: 12px auto;
+  padding: 6px 26px;
+  background: none;
+  border: 1px solid #a08b6a;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+}
+.screen-death { text-align: center; }
+.death-title { letter-spacing: 0.3em; margin-top: 3em; }
+.death-text { margin: 1.5em auto 2em; }
+.death-msg { color: #8a5a2b; min-height: 1.9em; }
+/* 存读档菜单 */
+.save-title { text-align: center; letter-spacing: 0.12em; }
+.save-hint { font-size: 0.85em; color: #7a6a4f; text-align: center; margin-top: 0; }
+.save-msg { color: #8a5a2b; min-height: 1.9em; text-align: center; }
+.slot-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px dotted #c9bda5;
+  padding: 7px 0;
+}
+.slot-label { min-width: 4.5em; font-weight: bold; }
+.slot-info { flex: 1; font-size: 0.82em; color: #7a6a4f; }
+.slot-row button {
+  font: inherit;
+  font-size: 0.85em;
+  background: none;
+  border: 1px solid #a08b6a;
+  border-radius: 3px;
+  padding: 0 12px;
+  cursor: pointer;
+  color: #6b5a3e;
+}

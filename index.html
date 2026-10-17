@@ -14,5 +14,14 @@
   <script src="js/devpanel.js"></script>
   <script src="js/content/realm.js"></script>
   <script src="js/content/ch1.js"></script>
+  <script>
+    // 接线：挂载主 UI（Task 7）。剧情图由内容脚本提供（Task 8/9 注册 FC.Content.graph）；
+    // 内容缺失时 UI 显示"内容加载中"，不影响面板与其余功能。
+    FC.UI.mount(document.getElementById('app'), {
+      getGraph: function () {
+        return (typeof FC.Content !== 'undefined' && FC.Content && FC.Content.graph) ? FC.Content.graph : null;
+      }
+    });
+  </script>
 </body>
 </html>
